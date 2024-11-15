@@ -213,7 +213,7 @@ module Bundler
     end
 
     def missing_specs
-      resolve.materialize(requested_dependencies).missing_specs
+      resolve.missing_specs_for(requested_dependencies)
     end
 
     def missing_specs?
@@ -599,7 +599,7 @@ module Bundler
         retry
       end
 
-      missing_specs = specs.missing_specs
+      missing_specs = resolve.missing_specs
 
       if missing_specs.any?
         missing_specs.each do |s|
@@ -628,7 +628,7 @@ module Bundler
         raise GemNotFound, "Could not find #{missing_specs_list.join(" nor ")}"
       end
 
-      incomplete_specs = specs.incomplete_specs
+      incomplete_specs = resolve.incomplete_specs
       loop do
         break if incomplete_specs.empty?
 
@@ -637,7 +637,7 @@ module Bundler
         reresolve_without(incomplete_specs)
         specs = resolve.materialize(dependencies)
 
-        still_incomplete_specs = specs.incomplete_specs
+        still_incomplete_specs = resolve.incomplete_specs
 
         if still_incomplete_specs == incomplete_specs
           package = resolution_packages.get_package(incomplete_specs.first.name)
@@ -647,7 +647,7 @@ module Bundler
         incomplete_specs = still_incomplete_specs
       end
 
-      insecurely_materialized_specs = specs.insecurely_materialized_specs
+      insecurely_materialized_specs = resolve.insecurely_materialized_specs
 
       if insecurely_materialized_specs.any?
         Bundler.ui.warn "The following platform specific gems are getting installed, yet the lockfile includes only their generic ruby version:\n" \
